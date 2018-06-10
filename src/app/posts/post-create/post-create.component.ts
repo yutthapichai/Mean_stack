@@ -1,15 +1,16 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Post } from '../post.model';
+
+import { PostsService } from '../posts.service';
+
 @Component ({
   selector: 'app-post-create',
   templateUrl: './post-create.component.html',
   styleUrls: ['./post-create.component.css']
 })
 export class PostCreateComponent {
-  enteredTitle   = '';
-  enteredContent = '';
-  @Output() postCreated    = new EventEmitter<Post>();
+
+  constructor(public objectService: PostsService) {}
 
   onAddPost(form: NgForm) {
     if ( form.value.title === '' || form.value.content === '' ) {
@@ -21,11 +22,10 @@ export class PostCreateComponent {
         alert('please input Content');
       }
     } else {
-      const post: Post = {
-        title:   form.value.title,
-        content: form.value.content
-      };
-      this.postCreated.emit(post);
+      this.objectService.addPost(form.value.title, form.value.content);
+      form.resetForm();
+      form.value.title = '';
+      form.value.content = '';
     }
   }
 }
