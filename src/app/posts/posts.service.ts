@@ -13,12 +13,12 @@ export class PostsService {
   }
 
   getPostUpdateListener() {
-    return this.postsUpdated.asObservable();
+    return this.postsUpdated.asObservable(); // สังเกตุการอัพเดทข้อมูล
   }
 
   addPost(title: string, content: string) {
     const post: Post = {title: title, content: content};
     this.posts.push(post); // posts = [{title: title, content: content}]
-    this.postsUpdated.next([...this.posts]);
+    this.postsUpdated.next([...this.posts]); //  next เพื่อดึงค่าที่เราสนใจออกมา
   }
 }
