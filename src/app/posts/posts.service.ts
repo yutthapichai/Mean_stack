@@ -9,7 +9,7 @@ import { Subject } from 'rxjs';
 
 export class PostsService {
   private posts: Post[] = []; // Post = [ {title:string,content:string} ] = [] เท่ากับค่าว่าง
-  private postsUpdated = new Subject<Post[]>();
+  private postsUpdated = new Subject();
 
 
   constructor( private http: HttpClient ) {}
@@ -19,10 +19,10 @@ export class PostsService {
     // return [...this.posts]; // แสดงค่า object {title:string,content:string}
     this.http
     .get<{ message: string, posts: Post[] }>(
-      'http://localhost:5000/api/posts'
+      'http://localhost:5000/api/gets'
     )
     .subscribe((postData) => {
-      console.log(postData.message);
+      console.log(postData.posts);
       this.posts = postData.posts;
       this.postsUpdated.next([...this.posts]);
     });
@@ -36,7 +36,7 @@ export class PostsService {
 
   addPost(title: string, content: string) {
     const post: Post = { id: null, title: title, content: content};
-    this.http.post<{message: string}>('http://localhost:5000/api/postss', post)
+    this.http.post<{message: string}>('http://localhost:5000/api/posts', post)
     .subscribe((responseData) => {
       console.log(responseData.message);
       this.posts.push(post); // posts = [{title: title, content: content}]

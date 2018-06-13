@@ -1,12 +1,20 @@
-const express    = require("express");
-const app        = express();
+const express = require("express");
+const app = express();
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const Post = require("./models/post");
 
+mongoose
+  .connect("mongodb://localhost:27017/testdb")
+  .then(() => {
+    console.warn("Connected to database");
+  })
+  .catch(() => {
+    console.warn("Connection failed");
+  });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-
 
 // โค้ดรวม host angular and nodejs ไม่ทำงาน
 app.use((req, res, next) => {
@@ -22,39 +30,32 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/", function(req, res, next) {
+  // Handle the get for this route
+});
 
 
-app.post("/api/postss", (req, res, next) => {
-  const post = req.body;
+app.post("/api/posts", (req, res, next) => {
+  const post = new Post({
+    title: req.body.title,
+    content: req.body.content
+  });
+  post.save();
   console.warn(post);
-  res.json({
+  res.status(201).json({
     message: "Post add success"
   });
   next();
 });
 
-
-
-
-app.use("/api/posts", (req, res, next) => {
-  const posts = [
-    {
-      id: "dsadadad",
-      title: "this is the first server",
-      content: "this is comming from the server one"
-    },
-    {
-      id: "dsadasdsaddad",
-      title: "this is the two running",
-      content: "this is comming from the server two"
-    }
-  ];
-  res.status(200).json({
-    message: "Get fetch success",
-    posts: posts
-  });
+app.use("/api/gets", (req, res, next) => {
+  Post.find()
+    .then((data) => {
+      res.status(200).json({
+        message: "Get fetch success",
+        posts: data
+      });
+    });
 });
-
-
 
 module.exports = app;
