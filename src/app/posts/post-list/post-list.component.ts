@@ -17,13 +17,16 @@ export class PostListComponent implements OnInit, OnDestroy {
 */
   posts: Post[] = [];
   private postsSub: Subscription;
+  isLoading = false;
 
   constructor(public objectService: PostsService) {}
 
   ngOnInit() {
+    this.isLoading = true;
     this.objectService.getPosts();
     this.postsSub = this.objectService.getPostUpdateListener()
     .subscribe((posts: Post[]) => {
+      this.isLoading = false;
       this.posts = posts;
     }); // subscripe คือการติดตามความเคลื่อนไหว ของ method สังเกตุการและเชื่อมการทำงาน observable(ส่งค่า) กับ observer(รับค่า)
   } // observable.subscripe(observer)

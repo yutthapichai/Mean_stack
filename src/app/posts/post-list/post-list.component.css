@@ -3,4 +3,6 @@
   margin-top:1rem;
   margin-bottom: 2rem;
 }
-
+mat-spinner {
+  margin:auto;
+}
