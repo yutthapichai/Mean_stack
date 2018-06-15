@@ -20,6 +20,7 @@ export class PostCreateComponent implements OnInit {
 
   constructor(public objectService: PostsService, public router: ActivatedRoute) {}
 
+  // ngonint ทำงานอัติโนมัติเมื่อมีการใช้ component นี้
   ngOnInit() {
     this.router.paramMap.subscribe((paramMap: ParamMap) => {
       if (paramMap.has('postId')) {

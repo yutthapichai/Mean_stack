@@ -23,7 +23,7 @@ export class PostListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isLoading = true;
-    this.objectService.getPosts();
+    this.objectService.getPosts(); // มีการตัวแปล posts ใน service
     this.postsSub = this.objectService.getPostUpdateListener()
     .subscribe((posts: Post[]) => {
       this.isLoading = false;

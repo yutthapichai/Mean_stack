@@ -51,14 +51,14 @@ export class PostsService {
     );
   }
 
-
+  // post<{}> คือที่ส่งกลับมา
   addPost(title: string, content: string) {
-    const post: Post = { id: null, title: title, content: content};
+    const post: Post = { id: null, title: title, content: content}; // ค่าเริ่มต้น
     this.http.post<{message: string, postId: string}>
     ('http://localhost:5000/api/posts', post)
     .subscribe((responseData) => {
       console.log(responseData.message);
-      const id = responseData.postId;
+      const id = responseData.postId; // ส่งแค่ id กลับมา
       post.id = id;
       this.posts.push(post); // posts = [{title: title, content: content}]
       this.postsUpdated.next([...this.posts]); //  next เพื่อดึงค่าที่เราสนใจออกมา
@@ -72,7 +72,7 @@ export class PostsService {
     .subscribe(Response => {
       const updatedPosts = [...this.posts];
       const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);
-      updatedPosts[oldPostIndex] = post;
+      updatedPosts[oldPostIndex] = post; // อัพเดทอาร์เรที่ประกาศไว้
       this.posts = updatedPosts;
       this.postsUpdated.next([...this.posts]);
       this.router.navigate(['/']);
@@ -84,7 +84,7 @@ export class PostsService {
     .subscribe(() => {
       console.log('Deleted!');
       const updatedPosts = this.posts.filter(post => post.id !== postId);
-      this.posts = updatedPosts;
+      this.posts = updatedPosts; // อัพเดทกล่องอาร์เรที่ประกาศไว้
       this.postsUpdated.next([...this.posts]);
     });
   }
