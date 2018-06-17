@@ -48,12 +48,19 @@ router.post("", multer({storage: storage}).single("image"), (req, res, next) => 
   console.log('postserver' + post);
 });
 
-router.put('/:id', (req, res, next) => {
+router.put('/:id', multer({ storage: storage }).single("image"), (req, res, next) => {
+  let ImagePath = req.body.imagePath;// ไฟล์ภาพเดิม
+  if (req.file) {   // ไฟล์ภาพใหม่
+    const url = req.protocol + "://" + req.get("host");
+    ImagePath = url + "/images/" + req.file.filename;
+  }
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: ImagePath
   });
+  console.log("update result " + post);
   Post.updateOne({ _id: req.params.id }, post).then(result => {
     console.log(result);
     res.status(200).json({ message: 'Update success' });

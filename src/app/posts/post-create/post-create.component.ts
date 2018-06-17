@@ -26,10 +26,10 @@ export class PostCreateComponent implements OnInit {
   // ngonint ทำงานอัติโนมัติเมื่อมีการใช้ component นี้
   ngOnInit() {
     this.form = new FormGroup({
-      'title': new FormControl(null, {
+      title: new FormControl(null, {
         validators: [ Validators.required, Validators.minLength(3)]
       }),
-      'content': new FormControl(null, {validators: [Validators.required]}),
+      content: new FormControl(null, {validators: [Validators.required]}),
       image: new FormControl(null, {validators: [Validators.required],
         asyncValidators: [mimeType]
       })
@@ -39,18 +39,20 @@ export class PostCreateComponent implements OnInit {
         this.mode = 'edit';
         this.postId = paramMap.get('postId');
         this.isLoading = true;
-        this.objectService.getPost(this.postId).subscribe(postData => {
+        this.objectService.getPost(this.postId)
+        .subscribe(postData => {
           this.isLoading = false;
           this.post = {
             id: postData._id,
             title: postData.title,
             content: postData.content,
-            imagePath: null
+            imagePath: postData.imagePath
           };
-        });
-        this.form.setValue({
-          'title': this.post.title,
-          'content': this.post.content
+          this.form.setValue({
+            title: this.post.title,
+            content: this.post.content,
+            image: this.post.imagePath
+          });
         });
       } else {
         this.mode = 'create';
@@ -78,10 +80,19 @@ export class PostCreateComponent implements OnInit {
     } else {
       this.isLoading = true;
       if (this.mode === 'create') {
-        this.objectService.addPost(this.form.value.title, this.form.value.content, this.form.value.image);
+        this.objectService.addPost(
+          this.form.value.title,
+          this.form.value.content,
+          this.form.value.image
+        );
         this.form.reset();
       } else {
-        this.objectService.updatePost(this.postId, this.form.value.title, this.form.value.content);
+        this.objectService.updatePost(
+          this.postId,
+          this.form.value.title,
+          this.form.value.content,
+          this.form.value.image
+        );
       }
     }
   }
