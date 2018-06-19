@@ -4,7 +4,7 @@
 /dist
 /tmp
 /out-tsc
-
+/backend/images
 # dependencies
 /node_modules
 

@@ -10,32 +10,36 @@ import { Router } from '@angular/router';
 
 export class PostsService {
   private posts: Post[] = []; // Post = [ {title:string,content:string} ] = [] เท่ากับค่าว่าง
-  private postsUpdated = new Subject();
+  private postsUpdated = new Subject<{posts: Post[], postCount: number}>();
 
   // ถ้ามีการสร้าง object เพื่อเรียกใช้คลาสนี้ก็ให้กำหนดค่า constructor มาด้วย
   constructor( private http: HttpClient, private router: Router ) {}
 
 
-  getPosts() {
+  getPosts(postsPerPage: number, currentPage: number) {
     // return [...this.posts]; // แสดงค่า object {title:string,content:string}
+    const queryParams = `?pagesize=${postsPerPage}&page=${currentPage}`;
     this.http
-    .get<{ message: string, posts: any }>(
-      'http://localhost:5000/api/posts'
+    .get<{ message: string, posts: any, maxPosts: number }>(
+      'http://localhost:5000/api/posts' + queryParams
     )
     .pipe(map((postData) => {
-      return postData.posts.map(post => {
+      console.log(postData.message);
+      return { posts: postData.posts.map(post => {
         return {
           id: post._id,
           title: post.title,
           content: post.content,
           imagePath: post.imagePath
         };
-      });
+      }),
+        maxPosts: postData.maxPosts
+      };
     }))
     .subscribe((transformedpost) => {
       console.log(transformedpost);
-      this.posts = transformedpost;
-      this.postsUpdated.next([...this.posts]);
+      this.posts = transformedpost.posts;
+      this.postsUpdated.next({posts: [...this.posts], postCount: transformedpost.maxPosts}); // พุชค่าไปเก็บไว้ในตัวแปล postupdate
     });
   }
 
@@ -66,14 +70,14 @@ export class PostsService {
       console.log(responseData.message);
       // const id = responseData.postId; // ส่งแค่ id กลับมา
       // post.id = id;
-      const post: Post = {
+      /* const post: Post = {
         id: responseData.post.id,
         title: title,
         content: content,
         imagePath: responseData.post.imagePath
       };
       this.posts.push(post); // posts = [{title: title, content: content}]
-      this.postsUpdated.next([...this.posts]); //  next เพื่อดึงค่าที่เราสนใจออกมา
+      this.postsUpdated.next([...this.posts]); //  next เพื่อดึงค่าที่เราสนใจออกมา */
       this.router.navigate(['/']);
     });
   }
@@ -97,7 +101,7 @@ export class PostsService {
     }
     this.http.put('http://localhost:5000/api/posts/' + id, postData)
     .subscribe(response => {
-      const updatedPosts = [...this.posts];
+    /*  const updatedPosts = [...this.posts];
       const oldPostIndex = updatedPosts.findIndex(p => p.id === id);
       const post: Post = {
         id: id,
@@ -107,18 +111,18 @@ export class PostsService {
       };
       updatedPosts[oldPostIndex] = post; // อัพเดทอาร์เรที่ประกาศไว้
       this.posts = updatedPosts;
-      this.postsUpdated.next([...this.posts]);
+      this.postsUpdated.next([...this.posts]); */
       this.router.navigate(['/']);
     });
   }
 
   deletePost(postId: string) {
-    this.http.delete('http://localhost:5000/api/posts/' + postId)
-    .subscribe(() => {
+    return this.http.delete('http://localhost:5000/api/posts/' + postId)
+/*    .subscribe(() => {
       console.log('Deleted!');
       const updatedPosts = this.posts.filter(post => post.id !== postId);
       this.posts = updatedPosts; // อัพเดทกล่องอาร์เรที่ประกาศไว้
       this.postsUpdated.next([...this.posts]);
-    });
+    }) */ ;
   }
 }
