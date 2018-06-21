@@ -3,6 +3,7 @@ const multer = require('multer');
 const Post = require("../models/post");
 const router = express.Router();
 
+const checkAuth = require("../middleware/check-auth");
 
 const MIM_TYPE_MAP = {
   'image/png': 'png',
@@ -26,7 +27,7 @@ const storage = multer.diskStorage({
 });
 
 
-router.post("", multer({storage: storage}).single("image"), (req, res, next) => {
+router.post("", checkAuth, multer({storage: storage}).single("image"), (req, res, next) => {
   const url = req.protocol + '://' + req.get('host');
   const post = new Post({
     title: req.body.title,
@@ -48,7 +49,7 @@ router.post("", multer({storage: storage}).single("image"), (req, res, next) => 
   console.log('postserver' + post);
 });
 
-router.put('/:id', multer({ storage: storage }).single("image"), (req, res, next) => {
+router.put('/:id', checkAuth, multer({ storage: storage }).single("image"), (req, res, next) => {
   let ImagePath = req.body.imagePath;// ไฟล์ภาพเดิม
   if (req.file) {   // ไฟล์ภาพใหม่
     const url = req.protocol + "://" + req.get("host");
@@ -102,7 +103,7 @@ router.get("/:id", (req , res, next) => {
   });
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', checkAuth, (req, res, next) => {
   console.warn('ID has been deleted ' + req.params.id);
   Post.deleteOne({ _id: req.params.id }).then(result => {
     console.log(result);
