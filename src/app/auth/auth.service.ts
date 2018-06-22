@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private isAuthenticated = false;
   private token: string;
-  private tokentimer: any;
+  private tokenTimer: any;
   private authStatusListener = new Subject<boolean>();
 
   constructor(private http: HttpClient, private router: Router) { }
@@ -45,20 +45,22 @@ export class AuthService {
 
   login(email: string, password: string) {
     const authData: AuthData = { email: email, password: password };
-    this.http.post<{ token: string, message: string, expiresIn: number }>('http://localhost:5000/api/user/login', authData)
+    this.http
+    .post<{ token: string, expiresIn: number }>('http://localhost:5000/api/user/login',
+    authData
+    )
       .subscribe(Response => {
-        console.log(Response.message);
         const token = Response.token;
         this.token = token;
         if (token) {
           const expiresInDuration = Response.expiresIn;
-          this.setAuthTimer(expiresInDuration);
+          this.setAuthTimer(expiresInDuration); // เวลาล็อคเอ้าอัติโนมัต
           this.isAuthenticated = true;
           this.authStatusListener.next(true);
           const now = new Date();
           const expirationDate = new Date(now.getTime() + expiresInDuration * 1000);
-          console.log(expirationDate);
-          this.saveAuthData(token, expirationDate);
+          console.log(expirationDate); // แสดงเวลาปัจจุบันที่เหลือจะล็อคเอ้าอัติโนมัต
+          this.saveAuthData(token, expirationDate); // เก็บ session และ เวลา ไว้ในฐานข้อมูล brownser
           this.router.navigate(['/']);
         }
       });
@@ -67,7 +69,7 @@ export class AuthService {
 
 
   autoAuthUser() {
-    const authInformation  = this.getAuthData();
+    const authInformation  = this.getAuthData(); // เอาข้อมูลมาจากฐานข้อมูล brownser
     if (!authInformation) {
       return;
     }
@@ -87,15 +89,15 @@ export class AuthService {
     this.token = null;
     this.isAuthenticated = false;
     this.authStatusListener.next(false);
-    clearTimeout(this.tokentimer);
-    this.clearAuthData();
+    clearTimeout(this.tokenTimer);
+    this.clearAuthData(); // ลบฐานข้อมูลใน brownser
     this.router.navigate(['/login']);
   }
 
 
   private setAuthTimer(duration: number) {
     console.log('Setting timer: ' + duration);
-    this.tokentimer = setTimeout(() => { this.logout(); }, duration * 1000);
+    this.tokenTimer = setTimeout(() => { this.logout(); }, duration * 1000);
   }
 
 
