@@ -21,6 +21,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   private postsSub: Subscription;
   private authStatusSub: Subscription;
   userIsAuthenticated = false;
+  userId: string;
   isLoading = false;
   totalPosts = 0;
   postsPerPage = 10;
@@ -31,6 +32,7 @@ export class PostListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isLoading = true;
+    this.userId = this.objectauthService.getUserId();
     this.objectpostService.getPosts(this.postsPerPage, this.currentPage); // ส่งข้อมูลไปหา server เพื่อ fetch ค่าออกแล้วอัพเดทลง Subject
     this.postsSub = this.objectpostService.getPostUpdateListener() // ติดตามการอัพเดทข้อมูลของ subject
     .subscribe((postsData: { posts: Post[], postCount: number }) => { //  รับเอาข้อมูลจาก subject เพื่อนำมาสแดงผล
@@ -39,8 +41,10 @@ export class PostListComponent implements OnInit, OnDestroy {
       this.posts = postsData.posts;
     }); // subscripe คือการติดตามความเคลื่อนไหว ของ method สังเกตุการและเชื่อมการทำงาน observable(ส่งค่า) กับ observer(รับค่า)
     this.userIsAuthenticated = this.objectauthService.getIsAuth();
-    this.authStatusSub = this.objectauthService.getAuthStatusListener().subscribe(isAuthenticated => {
+    this.authStatusSub = this.objectauthService.getAuthStatusListener()
+    .subscribe(isAuthenticated => {
       this.userIsAuthenticated = isAuthenticated;
+      this.userId = this.objectauthService.getUserId();
     });
   } // observable.subscripe(observer)
 

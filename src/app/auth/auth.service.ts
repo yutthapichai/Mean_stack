@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private isAuthenticated = false;
   private token: string;
+  private userId: string;
   private tokenTimer: any;
   private authStatusListener = new Subject<boolean>();
 
@@ -24,6 +25,11 @@ export class AuthService {
 
   getIsAuth() {
     return this.isAuthenticated;
+  }
+
+
+  getUserId() {
+    return this.userId;
   }
 
 
@@ -46,7 +52,7 @@ export class AuthService {
   login(email: string, password: string) {
     const authData: AuthData = { email: email, password: password };
     this.http
-    .post<{ token: string, expiresIn: number }>('http://localhost:5000/api/user/login',
+    .post<{ token: string, expiresIn: number, userId: string }>('http://localhost:5000/api/user/login',
     authData
     )
       .subscribe(Response => {
@@ -56,11 +62,12 @@ export class AuthService {
           const expiresInDuration = Response.expiresIn;
           this.setAuthTimer(expiresInDuration); // เวลาล็อคเอ้าอัติโนมัต
           this.isAuthenticated = true;
+          this.userId = Response.userId;
           this.authStatusListener.next(true);
           const now = new Date();
           const expirationDate = new Date(now.getTime() + expiresInDuration * 1000);
           console.log(expirationDate); // แสดงเวลาปัจจุบันที่เหลือจะล็อคเอ้าอัติโนมัต
-          this.saveAuthData(token, expirationDate); // เก็บ session และ เวลา ไว้ในฐานข้อมูล brownser
+          this.saveAuthData(token, expirationDate, this.userId ); // เก็บ session และ เวลา ไว้ในฐานข้อมูล brownser
           this.router.navigate(['/']);
         }
       });
@@ -78,6 +85,7 @@ export class AuthService {
     if (expiresIn > 0) {
       this.token = authInformation.token;
       this.isAuthenticated = true;
+      this.userId = authInformation.userId;
       this.setAuthTimer(expiresIn / 1000);
       this.authStatusListener.next(true);
     }
@@ -90,6 +98,7 @@ export class AuthService {
     this.isAuthenticated = false;
     this.authStatusListener.next(false);
     clearTimeout(this.tokenTimer);
+    this.userId = null;
     this.clearAuthData(); // ลบฐานข้อมูลใน brownser
     this.router.navigate(['/login']);
   }
@@ -101,26 +110,30 @@ export class AuthService {
   }
 
 
-  private saveAuthData(token: string, expirationDate: Date) {
+  private saveAuthData(token: string, expirationDate: Date, userId: string) {
     localStorage.setItem('token', token);
     localStorage.setItem('expiration', expirationDate.toISOString());
+    localStorage.setItem('userId', userId);
   }
 
 
   private clearAuthData() {
     localStorage.removeItem('token');
     localStorage.removeItem('expiration');
+    localStorage.removeItem('userId');
   }
 
   private getAuthData() {
     const token = localStorage.getItem('token');
     const expirationDate = localStorage.getItem('expiration');
+    const userId = localStorage.getItem('userId');
     if ( !token || !expirationDate ) {
       return;
     }
     return {
       token: token,
-      expirationDate: new Date(expirationDate)
+      expirationDate: new Date(expirationDate),
+      userId: userId
     };
   }
 }
