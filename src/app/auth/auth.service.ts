@@ -45,6 +45,8 @@ export class AuthService {
     this.http.post('http://localhost:5000/api/user/signup', authData)
     .subscribe(Response => {
       console.log(Response);
+    }, () => {
+      this.authStatusListener.next(false);
     });
   }
 
@@ -70,6 +72,8 @@ export class AuthService {
           this.saveAuthData(token, expirationDate, this.userId ); // เก็บ session และ เวลา ไว้ในฐานข้อมูล brownser
           this.router.navigate(['/']);
         }
+      }, () => {
+        this.authStatusListener.next(false);
       });
   }
 

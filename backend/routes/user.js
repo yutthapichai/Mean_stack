@@ -7,25 +7,30 @@ const User = require("../models/user");
 const router = express.Router();
 
 router.post("/signup", (req, res, next) => {
-  bcrypt.hash(req.body.password, 10).then(hash => {
-    const user = new User({
-      email: req.body.email,
-      password: hash
-    });
-    user
-      .save()
-      .then(result => {
-        res.status(201).json({
-          massage: "User created",
-          result: result
+  User.findOne({ email: req.body.email })
+    .then(result => {
+      if (result) {
+        res.status(401).json({ message: "Have an email please new email" });
+      } else {
+        bcrypt.hash(req.body.password, 10).then(hash => {
+          const user = new User({
+            email: req.body.email,
+            password: hash
+          });
+          user.save().then(result => {
+            res.json({
+              massage: "User created",
+              result: result
+            });
+          });
         });
-      })
-      .catch(err => {
-        res.status(500).json({
-          error: err
-        });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: err
       });
-  });
+    });
 });
 
 router.post("/login", (req, res, next) => {
@@ -33,30 +38,30 @@ router.post("/login", (req, res, next) => {
   User.findOne({ email: req.body.email })
     .then(user => {
       if (!user) {
-        return res.status(401).json({ message: "don't have an email" });
+        res.status(401).json({ message: "don't have an email" });
+      } else {
+        fetcheduser = user;
+        return bcrypt.compare(req.body.password, user.password);
       }
-      fetcheduser = user;
-      return bcrypt.compare(req.body.password, user.password);
     })
     .then(result => {
       if (!result) {
-        return res.status(401).json({ message: "password don't match" });
-      }
-      const token = jwt.sign(
-        { email: fetcheduser.email, userId: fetcheduser._id },
-        "secret_this_should_be_longer",
-        { expiresIn: "1h" }
-      );
-      res
-        .status(200)
-        .json({
+        res.status(401).json({ message: "password don't match" });
+      } else {
+        const token = jwt.sign(
+          { email: fetcheduser.email, userId: fetcheduser._id },
+          "secret_this_should_be_longer",
+          { expiresIn: "1h" }
+        );
+        res.status(200).json({
           token: token,
           expiresIn: 3600,
           userId: fetcheduser._id
         });
+      }
     })
     .catch(err => {
-      return res.status(401).json({ message: "Auth failed3" });
+      return res.status(500).json({ message: err });
     });
 });
 module.exports = router;
