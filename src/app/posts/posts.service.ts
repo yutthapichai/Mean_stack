@@ -4,6 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+
+
+const BACKEND_URL = environment.apiUrl + '/posts/';
 
 @Injectable({providedIn: 'root'})
 
@@ -20,28 +24,21 @@ export class PostsService {
     // return [...this.posts]; // แสดงค่า object {title:string,content:string}
     const queryParams = `?pagesize=${postsPerPage}&page=${currentPage}`;
     this.http
-    .get<{ message: string, posts: any, maxPosts: number }>(
-      'http://localhost:5000/api/posts' + queryParams
-    )
-    .pipe(map((postData) => {
-      console.log(postData.message);
-      return { posts: postData.posts.map(post => {
-        return {
-          id: post._id,
-          title: post.title,
-          content: post.content,
-          imagePath: post.imagePath,
-          creator: post.creator
-        };
-      }),
-        maxPosts: postData.maxPosts
-      };
-    }))
-    .subscribe((transformedpost) => {
-      console.log(transformedpost);
-      this.posts = transformedpost.posts;
-      this.postsUpdated.next({posts: [...this.posts], postCount: transformedpost.maxPosts}); // พุชค่าไปเก็บไว้ในตัวแปล postupdate
-    });
+      .get<{ message: string; posts: any; maxPosts: number }>(BACKEND_URL + queryParams)
+      .pipe(map(postData => {
+          console.log(postData.message);
+          return { posts: postData.posts.map(post => {
+              return { id: post._id, title: post.title, content: post.content, imagePath: post.imagePath, creator: post.creator };
+            }), maxPosts: postData.maxPosts };
+        }))
+      .subscribe(transformedpost => {
+        console.log(transformedpost);
+        this.posts = transformedpost.posts;
+        this.postsUpdated.next({
+          posts: [...this.posts],
+          postCount: transformedpost.maxPosts
+        }); // พุชค่าไปเก็บไว้ในตัวแปล postupdate
+      });
   }
 
 
@@ -52,10 +49,7 @@ export class PostsService {
   // ข้อมูลที่ต้องการแก้ไข
   getPost(id: string) {
     // return {...this.posts.find(p => p.id === id)};
-    return this.http
-    .get<{_id: string, title: string, content: string, imagePath: string, creator: string}>(
-      'http://localhost:5000/api/posts/' + id
-    );
+    return this.http.get<{ _id: string; title: string; content: string; imagePath: string; creator: string }>(BACKEND_URL + id);
   }
 
   // post<{}> คือที่ส่งกลับมา
@@ -66,7 +60,7 @@ export class PostsService {
     postData.append('content', content);
     postData.append('image', image, title);
     this.http.post<{message: string, post: Post}>
-    ('http://localhost:5000/api/posts', postData)
+      (BACKEND_URL, postData)
     .subscribe((responseData) => {
       console.log(responseData.message);
       // const id = responseData.postId; // ส่งแค่ id กลับมา
@@ -101,9 +95,8 @@ export class PostsService {
         creator: null
       };
     }
-    this.http.put('http://localhost:5000/api/posts/' + id, postData)
-    .subscribe(response => {
-    /*  const updatedPosts = [...this.posts];
+    this.http.put(BACKEND_URL + id, postData).subscribe(response => {
+      /*  const updatedPosts = [...this.posts];
       const oldPostIndex = updatedPosts.findIndex(p => p.id === id);
       const post: Post = {
         id: id,
@@ -119,12 +112,12 @@ export class PostsService {
   }
 
   deletePost(postId: string) {
-    return this.http.delete('http://localhost:5000/api/posts/' + postId)
-/*    .subscribe(() => {
+    return this.http.delete(BACKEND_URL + postId);
+    /*    .subscribe(() => {
       console.log('Deleted!');
       const updatedPosts = this.posts.filter(post => post.id !== postId);
       this.posts = updatedPosts; // อัพเดทกล่องอาร์เรที่ประกาศไว้
       this.postsUpdated.next([...this.posts]);
-    }) */ ;
+    }) */
   }
 }
